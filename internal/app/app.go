@@ -11,16 +11,20 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sonofsun61/APIFromSpec.git/internal/config"
+	"github.com/sonofsun61/APIFromSpec.git/internal/database"
 )
 
 type App struct {
 	cfg *config.Config
+	pool *pgxpool.Pool
 }
 
-func NewApp(cfg config.Config) *App {
+func NewApp(cfg *config.Config) *App {
 	return &App{
-		cfg: &cfg,
+		cfg: cfg,
+		pool: database.NewPostgresDB(),
 	}
 }
 
@@ -42,7 +46,7 @@ func (app *App) Run() {
 		}
 	}()
 	<- ctx.Done()
-	logger.Info("Recieved a stop signal. Gracefil Shutdown started...")
+	logger.Info("Recieved a stop signal. Graceful Shutdown started...")
 	shudownCtx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
 	defer cancel()
 	if err := server.Shutdown(shudownCtx); err != nil {
