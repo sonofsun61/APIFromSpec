@@ -2,21 +2,24 @@ package database
 
 import (
 	"context"
-	"os"
+	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewPostgresDB() (*pgxpool.Pool) {
-	dns := os.Getenv("DATABASE_URL")
-	if dns == "" {
-		panic("No database environment database provided")
-	}
-	pool, err := pgxpool.New(context.Background(), dns)
+func NewPostgresDB(ctx context.Context, dbURL string, logger *slog.Logger) (*pgxpool.Pool, error) {
+	poolConfig, err := pgxpool.ParseConfig(dbURL)
 	if err != nil {
-		panic("Can not create pgxpool")
+		return nil, err
 	}
-	defer pool.Close()
+	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
+	if err != nil {
+		return nil, err
+	}
 
-	return pool
+	if err := pool.Ping(ctx); err != nil {
+		return nil, err
+	}
+	logger.Info("Database connected successfully")
+	return pool, nil
 }
