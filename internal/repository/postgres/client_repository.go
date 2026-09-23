@@ -20,14 +20,26 @@ func NewPostgresClientRepository(pool *pgxpool.Pool) *PostgresClientRepository {
 	}
 }
 
-func (r *PostgresClientRepository) CreateClient(ctx context.Context, clientData entity.Client) (uuid.UUID, error) {
-	var newID uuid.UUID
-	err := r.pool.QueryRow(ctx, "INSERT INTO client (client_name, client_surname, birthday, gender, registration_date, address_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
-		clientData.ClientName, clientData.ClientSurname, clientData.Birthday, clientData.Gender, clientData.RegistrationDate, clientData.AddressID).Scan(&newID)
+func (r *PostgresClientRepository) CreateClient(ctx context.Context, newClientData entity.NewClientData, country string, city string, street string) (uuid.UUID, error) {
+	tx, err := r.pool.Begin(ctx)
 	if err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, fmt.Errorf("could not open transaction to create client: %v", err)
 	}
-	return newID, nil
+	defer tx.Rollback(ctx)
+	var newAddressID uuid.UUID
+	err = tx.QueryRow(ctx, "INSERT INTO address(country, city, street) VALUES($1, $2, $3) RETURNING id", country, city, street).Scan(&newAddressID)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("could not scan address id into variable: %v", err)
+	}
+	var newClientID uuid.UUID
+	err = tx.QueryRow(ctx, "INSERT INTO client(client_name, client_surname, birthday, gender, address_id) VALUES ($1, $2, $3, $4, $5) RETURNING id", newClientData.ClientName, newClientData.ClientSurname, newClientData.Birthday, newClientData.Gender, newAddressID).Scan(&newClientID)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("could not scan client id into variable: %v", err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+    	return uuid.Nil, fmt.Errorf("could not commit transaction: %v", err)
+	}
+	return newClientID, nil
 }
 
 func (r *PostgresClientRepository) DeleteClientByID(ctx context.Context, clientID uuid.UUID) error {
