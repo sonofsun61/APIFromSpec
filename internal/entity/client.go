@@ -15,3 +15,10 @@ type Client struct {
 	RegistrationDate time.Time `db:"registration_date"`
 	AddressID        uuid.UUID `db:"address_id"`
 }
+
+type NewClientData struct {
+	ClientName    string
+	ClientSurname string
+	Birthday      time.Time
+	Gender        string
+}
