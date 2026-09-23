@@ -8,7 +8,7 @@ import (
 )
 
 type ClientRepository interface {
-	CreateClient(ctx context.Context, clientData entity.Client) (uuid.UUID, error)
+	CreateClient(ctx context.Context, newClientData entity.NewClientData, country string, city string, street string) (uuid.UUID, error)
 	DeleteClientByID(ctx context.Context, clientID uuid.UUID) error
 	GetClientByNameAndSurname(ctx context.Context, name string, surname string) ([]entity.Client, error)
 	GetAllClients(ctx context.Context, limit *int, offset *int) ([]entity.Client, error)
@@ -23,8 +23,8 @@ func NewClientService(repo ClientRepository) *ClientService {
 	return &ClientService{repo: repo}
 }
 
-func (s *ClientService) CreateClient(ctx context.Context, clientData entity.Client) (uuid.UUID, error) {
-	return s.repo.CreateClient(ctx, clientData)
+func (s *ClientService) CreateClient(ctx context.Context, newClientData entity.NewClientData, country string, city string, street string) (uuid.UUID, error) {
+	return s.repo.CreateClient(ctx, newClientData, country, city, street)
 }
 
 func (s *ClientService) DeleteClientByID(ctx context.Context, clientID uuid.UUID) error {
