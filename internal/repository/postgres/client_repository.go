@@ -53,20 +53,47 @@ func (r *PostgresClientRepository) DeleteClientByID(ctx context.Context, clientI
 	return nil
 }
 
-func (r *PostgresClientRepository) GetClientByNameAndSurname(ctx context.Context, name string, surname string) ([]entity.Client, error) {
-	rows, err := r.pool.Query(ctx, "SELECT id, client_name, client_surname, birthday, gender, registration_date, address_id FROM client WHERE client_name = $1 AND client_surname = $2", name, surname)
+func (r *PostgresClientRepository) GetClientByNameAndSurname(ctx context.Context, name string, surname string) ([]entity.ClientWithAddress, error) {
+	query := `
+			SELECT 
+				client.id, 
+				client.client_name,
+				client.client_surname,
+				client.birthday,
+				client.gender,
+				client.registration_date, 
+				address.country,
+				address.city,
+				address.street 
+			FROM client
+			JOIN address ON client.address_id = address.id
+			WHERE client_name = $1 AND client_surname = $2`
+
+	rows, err := r.pool.Query(ctx, query, name, surname)
 	if err != nil {
-		return []entity.Client{}, fmt.Errorf("could not select client by name, surname: %v", err)
+		return []entity.ClientWithAddress{}, fmt.Errorf("could not select client by name, surname: %v", err)
 	}
-	clients, err := pgx.CollectRows(rows, pgx.RowToStructByName[entity.Client])
+	clients, err := pgx.CollectRows(rows, pgx.RowToStructByName[entity.ClientWithAddress])
 	if err != nil {
-		return []entity.Client{}, fmt.Errorf("could not place row to struct: %v", err)
+		return []entity.ClientWithAddress{}, fmt.Errorf("could not place row to struct: %v", err)
 	}
 	return clients, nil
 }
 
 func (r *PostgresClientRepository) GetAllClients(ctx context.Context, limit *int, offset *int) ([]entity.Client, error) {
-	rows, err := r.pool.Query(ctx, "SELECT id, client_name, client_surname, birthday, gender, registration_date, address_id FROM client LIMIT $1 OFFSET $2", limit, offset)
+	query := `
+			SELECT 
+				id, 
+				client_name,
+				client_surname,
+				birthday,
+				gender,
+				registration_date,
+				address_id
+			FROM client
+			LIMIT $1 OFFSET $2`
+
+	rows, err := r.pool.Query(ctx, query, limit, offset)
 	if err != nil {
 		return []entity.Client{}, fmt.Errorf("could not select clients: %v", err)
 	}
