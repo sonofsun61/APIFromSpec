@@ -13,6 +13,7 @@ func SetUpRouter(clientHandler *ClientHandler) http.Handler {
 			r.Post("/", clientHandler.CreateClient)
 			r.Delete("/{id}", clientHandler.DeleteClientByID)
 			r.Get("/", clientHandler.GetClients)
+			r.Patch("/{id}", clientHandler.UpdateClientAddress)
 		})
 	})
 	return r
