@@ -17,7 +17,7 @@ import (
 type ClientService interface {
 	CreateClient(ctx context.Context, newClientData entity.NewClientData, country string, city string, street string) (uuid.UUID, error)
 	DeleteClientByID(ctx context.Context, clientID uuid.UUID) error
-	GetClientByNameAndSurname(ctx context.Context, name string, surname string) ([]entity.Client, error)
+	GetClientByNameAndSurname(ctx context.Context, name string, surname string) ([]entity.ClientWithAddress, error)
 	GetAllClients(ctx context.Context, limit *int, offset *int) ([]entity.Client, error)
 	UpdateClientAddress(ctx context.Context, clientID uuid.UUID, country string, city string, street string) error
 }
@@ -85,7 +85,37 @@ func (h *ClientHandler) DeleteClientByID(w http.ResponseWriter, r *http.Request)
 			return
 		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *ClientHandler) GetClientByNameAndSurname(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	surname := r.URL.Query().Get("surname")
+	clients, err := h.service.GetClientByNameAndSurname(r.Context(), name, surname)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	resp := make([]dto.ClientResponse, len(clients))
+	for i := 0; i < len(clients); i++ {
+		address := dto.AddressResponse{
+			Country: clients[i].Country,
+			City: clients[i].City,
+			Street: clients[i].Street,
+		}
+		client := dto.ClientResponse{
+			ID: clients[i].ID,
+			ClientName: clients[i].ClientName,
+			ClientSurname: clients[i].ClientSurname,
+			Birthday: clients[i].Birthday,
+			Gender: clients[i].Gender,
+			Address: address,
+		}
+		resp[i] = client
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
 }
