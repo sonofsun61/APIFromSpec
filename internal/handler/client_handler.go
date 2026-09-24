@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -18,7 +19,7 @@ type ClientService interface {
 	CreateClient(ctx context.Context, newClientData entity.NewClientData, country string, city string, street string) (uuid.UUID, error)
 	DeleteClientByID(ctx context.Context, clientID uuid.UUID) error
 	GetClientByNameAndSurname(ctx context.Context, name string, surname string) ([]entity.ClientWithAddress, error)
-	GetAllClients(ctx context.Context, limit *int, offset *int) ([]entity.Client, error)
+	GetAllClients(ctx context.Context, limit *int, offset *int) ([]entity.ClientWithAddress, error)
 	UpdateClientAddress(ctx context.Context, clientID uuid.UUID, country string, city string, street string) error
 }
 
@@ -90,10 +91,33 @@ func (h *ClientHandler) DeleteClientByID(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *ClientHandler) GetClientByNameAndSurname(w http.ResponseWriter, r *http.Request) {
+func (h *ClientHandler) GetClients(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	surname := r.URL.Query().Get("surname")
-	clients, err := h.service.GetClientByNameAndSurname(r.Context(), name, surname)
+	var limit, offset *int
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		value, err := strconv.Atoi(limitStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		limit = &value
+	}
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		value, err := strconv.Atoi(offsetStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		offset = &value
+	}
+	var clients []entity.ClientWithAddress
+	var err error
+	if name != "" && surname != "" {
+		clients, err = h.service.GetClientByNameAndSurname(r.Context(), name, surname)
+	} else {
+		clients, err = h.service.GetAllClients(r.Context(), limit, offset)
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

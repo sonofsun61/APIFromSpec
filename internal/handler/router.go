@@ -12,7 +12,7 @@ func SetUpRouter(clientHandler *ClientHandler) http.Handler {
 		r.Route("/clients", func(r chi.Router) {
 			r.Post("/", clientHandler.CreateClient)
 			r.Delete("/{id}", clientHandler.DeleteClientByID)
-			r.Get("/", clientHandler.GetClientByNameAndSurname)
+			r.Get("/", clientHandler.GetClients)
 		})
 	})
 	return r
