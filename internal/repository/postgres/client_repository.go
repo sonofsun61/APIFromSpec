@@ -87,26 +87,29 @@ func (r *PostgresClientRepository) GetClientByNameAndSurname(ctx context.Context
 	return clients, nil
 }
 
-func (r *PostgresClientRepository) GetAllClients(ctx context.Context, limit *int, offset *int) ([]entity.Client, error) {
+func (r *PostgresClientRepository) GetAllClients(ctx context.Context, limit *int, offset *int) ([]entity.ClientWithAddress, error) {
 	query := `
 			SELECT 
-				id, 
-				client_name,
-				client_surname,
-				birthday,
-				gender,
-				registration_date,
-				address_id
+				client.id, 
+				client.client_name,
+				client.client_surname,
+				client.birthday,
+				client.gender,
+				client.registration_date, 
+				address.country,
+				address.city,
+				address.street 
 			FROM client
+			JOIN address ON client.address_id = address.id
 			LIMIT $1 OFFSET $2`
 
 	rows, err := r.pool.Query(ctx, query, limit, offset)
 	if err != nil {
-		return []entity.Client{}, fmt.Errorf("could not select clients: %v", err)
+		return []entity.ClientWithAddress{}, fmt.Errorf("could not select clients: %v", err)
 	}
-	clients, err := pgx.CollectRows(rows, pgx.RowToStructByName[entity.Client])
+	clients, err := pgx.CollectRows(rows, pgx.RowToStructByName[entity.ClientWithAddress])
 	if err != nil {
-		return []entity.Client{}, fmt.Errorf("could not place row to struct: %v", err)
+		return []entity.ClientWithAddress{}, fmt.Errorf("could not place row to struct: %v", err)
 	}
 	return clients, nil
 }
