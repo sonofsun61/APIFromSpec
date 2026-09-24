@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/sonofsun61/APIFromSpec/internal/dto"
 	"github.com/sonofsun61/APIFromSpec/internal/entity"
+	"github.com/sonofsun61/APIFromSpec/internal/mapper"
 )
 
 type ClientService interface {
@@ -122,23 +123,7 @@ func (h *ClientHandler) GetClients(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	resp := make([]dto.ClientResponse, len(clients))
-	for i := 0; i < len(clients); i++ {
-		address := dto.AddressResponse{
-			Country: clients[i].Country,
-			City: clients[i].City,
-			Street: clients[i].Street,
-		}
-		client := dto.ClientResponse{
-			ID: clients[i].ID,
-			ClientName: clients[i].ClientName,
-			ClientSurname: clients[i].ClientSurname,
-			Birthday: clients[i].Birthday,
-			Gender: clients[i].Gender,
-			Address: address,
-		}
-		resp[i] = client
-	}
+	resp := mapper.ClientsWithAddressesToDTO(clients)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
