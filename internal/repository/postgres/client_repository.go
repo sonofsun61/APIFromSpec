@@ -27,12 +27,19 @@ func (r *PostgresClientRepository) CreateClient(ctx context.Context, newClientDa
 	}
 	defer tx.Rollback(ctx)
 	var newAddressID uuid.UUID
-	err = tx.QueryRow(ctx, "INSERT INTO address(country, city, street) VALUES($1, $2, $3) RETURNING id", country, city, street).Scan(&newAddressID)
+	err = tx.QueryRow(ctx, `INSERT INTO address(country, city, street)
+							VALUES ($1, $2, $3)
+							RETURNING id`,
+	country, city, street).Scan(&newAddressID)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("could not scan address id into variable: %v", err)
 	}
 	var newClientID uuid.UUID
-	err = tx.QueryRow(ctx, "INSERT INTO client(client_name, client_surname, birthday, gender, address_id) VALUES ($1, $2, $3, $4, $5) RETURNING id", newClientData.ClientName, newClientData.ClientSurname, newClientData.Birthday, newClientData.Gender, newAddressID).Scan(&newClientID)
+	err = tx.QueryRow(ctx, `INSERT INTO client(client_name, client_surname, birthday,
+												gender, address_id)
+							VALUES ($1, $2, $3, $4, $5)
+							RETURNING id`, 
+	newClientData.ClientName, newClientData.ClientSurname, newClientData.Birthday, newClientData.Gender, newAddressID).Scan(&newClientID)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("could not scan client id into variable: %v", err)
 	}
@@ -111,7 +118,9 @@ func (r *PostgresClientRepository) UpdateClientAddress(ctx context.Context, clie
 	}
 	defer tx.Rollback(ctx)
 	var newAddressID uuid.UUID
-	err = tx.QueryRow(ctx, "INSERT INTO address (country, city, street) VALUES ($1, $2, $3) RETURNING id", country, city, street).Scan(&newAddressID)
+	err = tx.QueryRow(ctx, `INSERT INTO address (country, city, street)
+							VALUES ($1, $2, $3)
+							RETURNING id`, country, city, street).Scan(&newAddressID)
 	if err != nil {
 		return fmt.Errorf("could not insert new address: %v", err)
 	}
