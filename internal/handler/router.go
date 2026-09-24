@@ -11,6 +11,7 @@ func SetUpRouter(clientHandler *ClientHandler) http.Handler {
 	r.Route("/api/v1", func(r chi.Router)  {
 		r.Route("/clients", func(r chi.Router) {
 			r.Post("/", clientHandler.CreateClient)
+			r.Delete("/{id}", clientHandler.DeleteClientByID)
 		})
 	})
 	return r
