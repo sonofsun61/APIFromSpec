@@ -22,3 +22,15 @@ type NewClientData struct {
 	Birthday      time.Time
 	Gender        string
 }
+
+type ClientWithAddress struct {
+	ID               uuid.UUID `db:"id"`
+	ClientName       string    `db:"client_name"`
+	ClientSurname    string    `db:"client_surname"`
+	Birthday         time.Time `db:"birthday"`
+	Gender           string    `db:"gender"`
+	RegistrationDate time.Time `db:"registration_date"`
+	Country          string    `db:"country"`
+	City             string    `db:"city"`
+	Street           string    `db:"street"`
+}

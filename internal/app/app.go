@@ -23,9 +23,12 @@ func NewApp(cfg *config.Config) *App {
 	validate := validator.New()
 	pool := database.MustConnectToDatabase(context.Background(), cfg.ConnString)
 	clientRepo := postgres.NewPostgresClientRepository(pool)
+	supplierRepo := postgres.NewPostgresSupplierRepository(pool)
 	clientService := service.NewClientService(clientRepo)
+	supplierService := service.NewSupplierService(supplierRepo)
 	clientHandler := handler.NewClientHandler(clientService, validate)
-	router := handler.SetUpRouter(clientHandler)
+	supplierHandler := handler.NewSupplierHandler(supplierService, validate)
+	router := handler.SetUpRouter(clientHandler, supplierHandler)
 	return &App{
 		config: cfg,
 		pool:   pool,
