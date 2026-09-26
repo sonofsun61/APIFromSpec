@@ -22,13 +22,20 @@ type App struct {
 func NewApp(cfg *config.Config) *App {
 	validate := validator.New()
 	pool := database.MustConnectToDatabase(context.Background(), cfg.ConnString)
+
 	clientRepo := postgres.NewPostgresClientRepository(pool)
 	supplierRepo := postgres.NewPostgresSupplierRepository(pool)
+	productRepo := postgres.NewPostgresProductRepository(pool)
+
 	clientService := service.NewClientService(clientRepo)
 	supplierService := service.NewSupplierService(supplierRepo)
+	productService := service.NewProductService(productRepo)
+
 	clientHandler := handler.NewClientHandler(clientService, validate)
 	supplierHandler := handler.NewSupplierHandler(supplierService, validate)
-	router := handler.SetUpRouter(clientHandler, supplierHandler)
+	productHandler := handler.NewProductHandler(productService, validate)
+
+	router := handler.SetUpRouter(clientHandler, supplierHandler, productHandler)
 	return &App{
 		config: cfg,
 		pool:   pool,
