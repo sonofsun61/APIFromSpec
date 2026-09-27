@@ -77,6 +77,7 @@ func (h *SupplierHandler) AddSupplier(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	w.Header().Set("Content-Type", "application/json")
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(resp)
 }
@@ -117,6 +118,7 @@ func (h *SupplierHandler) UpdateSupplierAddress(w http.ResponseWriter, r *http.R
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -145,6 +147,7 @@ func (h *SupplierHandler) DeleteSupplier(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -184,6 +187,7 @@ func (h *SupplierHandler) GetSuppliers(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := mapper.SupplierWithAddressesToDTO(suppliers)
 	w.Header().Set("Content-Type", "application/json")
+	setCacheControl(w, "public, max-age=60")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
@@ -217,6 +221,7 @@ func (h *SupplierHandler) GetSupplierByID(w http.ResponseWriter, r *http.Request
 	}
 	resp := mapper.SupplierWithAddressToDTO(supplierData)
 	w.Header().Set("Content-Type", "application/json")
+	setCacheControl(w, "public, max-age=60")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }

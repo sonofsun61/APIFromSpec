@@ -80,6 +80,7 @@ func (h *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	w.Header().Set("Content-Type", "application/json")
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(resp)
 }
@@ -109,6 +110,7 @@ func (h *ClientHandler) DeleteClientByID(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -158,6 +160,7 @@ func (h *ClientHandler) GetClients(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := mapper.ClientsWithAddressesToDTO(clients)
 	w.Header().Set("Content-Type", "application/json")
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
@@ -198,5 +201,6 @@ func (h *ClientHandler) UpdateClientAddress(w http.ResponseWriter, r *http.Reque
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusNoContent)
 }

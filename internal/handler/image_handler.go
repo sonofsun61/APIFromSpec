@@ -64,6 +64,7 @@ func (h *ImageHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -98,6 +99,7 @@ func (h *ImageHandler) ChangeImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -126,6 +128,7 @@ func (h *ImageHandler) DeleteImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -159,6 +162,7 @@ func (h *ImageHandler) GetImageByProductID(w http.ResponseWriter, r *http.Reques
 	resp := image.Image
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", "attachment; filename=image")
+	setCacheControl(w, "max-age=3600")
 	w.WriteHeader(http.StatusOK)
 	w.Write(resp)
 }
@@ -193,6 +197,7 @@ func (h *ImageHandler) GetImageByImageID(w http.ResponseWriter, r *http.Request)
 	resp := image.Image
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", "attachment; filename=image")
+	setCacheControl(w, "max-age=3600")
 	w.WriteHeader(http.StatusOK)
 	w.Write(resp)
 }

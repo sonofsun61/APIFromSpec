@@ -83,6 +83,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		SupplierID:     product.SupplierID,
 	}
 	w.Header().Set("Content-Type", "application/json")
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(resp)
 }
@@ -128,6 +129,7 @@ func (h *ProductHandler) DecreaseStock(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -160,6 +162,7 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 	}
 	resp := mapper.ProductToDTO(product)
 	w.Header().Set("Content-Type", "application/json")
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
@@ -200,6 +203,7 @@ func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) 
 	}
 	resp := mapper.ProductsToDTO(products)
 	w.Header().Set("Content-Type", "application/json")
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
@@ -229,5 +233,6 @@ func (h *ProductHandler) DeleteProductByID(w http.ResponseWriter, r *http.Reques
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusNoContent)
 }
