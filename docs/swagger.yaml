@@ -1,0 +1,775 @@
+basePath: /api/v1
+definitions:
+  dto.AddressResponse:
+    properties:
+      city:
+        type: string
+      country:
+        type: string
+      street:
+        type: string
+    type: object
+  dto.ClientResponse:
+    properties:
+      address:
+        $ref: '#/definitions/dto.AddressResponse'
+      birthday:
+        type: string
+      client_name:
+        type: string
+      client_surname:
+        type: string
+      gender:
+        type: string
+      id:
+        type: string
+      links:
+        additionalProperties:
+          $ref: '#/definitions/dto.Link'
+        type: object
+    type: object
+  dto.CreateClientRequest:
+    properties:
+      birthday:
+        type: string
+      city:
+        maxLength: 50
+        minLength: 1
+        type: string
+      client_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      client_surname:
+        maxLength: 100
+        minLength: 1
+        type: string
+      country:
+        maxLength: 25
+        minLength: 1
+        type: string
+      gender:
+        enum:
+        - male
+        - female
+        type: string
+      street:
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - birthday
+    - city
+    - client_name
+    - client_surname
+    - country
+    - street
+    type: object
+  dto.CreateProductRequest:
+    properties:
+      available_stock:
+        minimum: 0
+        type: integer
+      category_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      price:
+        type: number
+      product_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      supplier_id:
+        type: string
+    required:
+    - available_stock
+    - category_name
+    - product_name
+    type: object
+  dto.DecreaseAvailableStockRequest:
+    properties:
+      amount:
+        type: integer
+    type: object
+  dto.Link:
+    properties:
+      href:
+        type: string
+      method:
+        type: string
+    type: object
+  dto.ProductResponse:
+    properties:
+      available_stock:
+        type: integer
+      category_id:
+        type: string
+      id:
+        type: string
+      links:
+        additionalProperties:
+          $ref: '#/definitions/dto.Link'
+        type: object
+      name:
+        type: string
+      price:
+        type: number
+      supplier_id:
+        type: string
+    type: object
+  dto.SupplierRequest:
+    properties:
+      city:
+        maxLength: 50
+        minLength: 1
+        type: string
+      country:
+        maxLength: 25
+        minLength: 1
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      phone_number:
+        type: string
+      street:
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - city
+    - country
+    - name
+    - phone_number
+    - street
+    type: object
+  dto.SupplierResponse:
+    properties:
+      address:
+        $ref: '#/definitions/dto.AddressResponse'
+      id:
+        type: string
+      links:
+        additionalProperties:
+          $ref: '#/definitions/dto.Link'
+        type: object
+      name:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  dto.UpdateAddressRequest:
+    properties:
+      city:
+        maxLength: 50
+        minLength: 1
+        type: string
+      country:
+        maxLength: 25
+        minLength: 1
+        type: string
+      street:
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - city
+    - country
+    - street
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: 'REST API for a home-appliance store: clients, products, suppliers,
+    and product images.'
+  title: ShopAPI
+  version: "1.0"
+paths:
+  /clients:
+    get:
+      description: Returns clients filtered by name and surname, or a paginated list
+        of all clients if no filter is given
+      parameters:
+      - description: Client first name
+        in: query
+        name: name
+        type: string
+      - description: Client surname
+        in: query
+        name: surname
+        type: string
+      - description: Pagination limit
+        in: query
+        name: limit
+        type: integer
+      - description: Pagination offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.ClientResponse'
+            type: array
+        "400":
+          description: invalid limit or offset value
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Get clients
+      tags:
+      - clients
+    post:
+      consumes:
+      - application/json
+      description: Creates a new client along with a new address record, in a single
+        transaction.
+      parameters:
+      - description: Client data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateClientRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.ClientResponse'
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Create a new client
+      tags:
+      - clients
+  /clients/{id}:
+    delete:
+      description: Deletes an existing client without deleting his address
+      parameters:
+      - description: Client ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Client deleted successfully
+        "400":
+          description: Invalid id format
+          schema:
+            type: string
+        "404":
+          description: Client not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete an existing client
+      tags:
+      - clients
+    patch:
+      consumes:
+      - application/json
+      description: Creates a new address record and links it to the client, in a single
+        transaction
+      parameters:
+      - description: Client ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New address data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAddressRequest'
+      responses:
+        "204":
+          description: Address updated successfully
+        "400":
+          description: invalid request body, id format, or validation error
+          schema:
+            type: string
+        "404":
+          description: client not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Update a client's address
+      tags:
+      - clients
+  /images/{id}:
+    delete:
+      description: Deletes an image by its unique identifier; the owning product's
+        image_id is set to null
+      parameters:
+      - description: Image ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Image deleted successfully
+        "400":
+          description: invalid id format
+          schema:
+            type: string
+        "404":
+          description: image not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Delete an image by ID
+      tags:
+      - images
+    get:
+      description: Returns the raw image bytes by the image's unique identifier
+      parameters:
+      - description: Image ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: invalid id format
+          schema:
+            type: string
+        "404":
+          description: image not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Get an image by ID
+      tags:
+      - images
+    patch:
+      consumes:
+      - application/octet-stream
+      description: Replaces the bytes of an existing image by its ID
+      parameters:
+      - description: Image ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Image updated successfully
+        "400":
+          description: invalid id format or failed to read request body
+          schema:
+            type: string
+        "404":
+          description: image not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Replace an existing image
+      tags:
+      - images
+  /products:
+    get:
+      description: Returns a paginated list of products with available_stock greater
+        than zero
+      parameters:
+      - description: Pagination limit
+        in: query
+        name: limit
+        type: integer
+      - description: Pagination offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.ProductResponse'
+            type: array
+        "400":
+          description: invalid limit or offset value
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Get all available products
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Creates a new product; finds or creates the category by name, in
+        a single transaction
+      parameters:
+      - description: Product data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.ProductResponse'
+        "400":
+          description: invalid request body or validation error
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Create a new product
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      description: Deletes a product by its unique identifier
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Product deleted successfully
+        "400":
+          description: invalid id format
+          schema:
+            type: string
+        "404":
+          description: product not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Delete a product by ID
+      tags:
+      - products
+    get:
+      description: Returns a single product by its unique identifier
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ProductResponse'
+        "400":
+          description: invalid id format
+          schema:
+            type: string
+        "404":
+          description: product not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Get a product by ID
+      tags:
+      - products
+  /products/{id}/image:
+    get:
+      description: Returns the raw image bytes linked to the given product
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: invalid id format
+          schema:
+            type: string
+        "404":
+          description: product not found or has no image
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Get a product's image
+      tags:
+      - images
+    post:
+      consumes:
+      - application/octet-stream
+      description: Uploads raw image bytes and links them to the given product, in
+        a single transaction
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "201":
+          description: Image added successfully
+        "400":
+          description: invalid id format or failed to read request body
+          schema:
+            type: string
+        "404":
+          description: product not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Add an image to a product
+      tags:
+      - images
+  /products/{id}/stock:
+    patch:
+      consumes:
+      - application/json
+      description: Atomically decreases available_stock by the given amount, failing
+        if not enough stock is available
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Amount to decrease
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DecreaseAvailableStockRequest'
+      responses:
+        "204":
+          description: Stock decreased successfully
+        "400":
+          description: invalid request body, id format, or non-positive amount
+          schema:
+            type: string
+        "404":
+          description: product not found or insufficient stock
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Decrease a product's available stock
+      tags:
+      - products
+  /suppliers:
+    get:
+      description: Returns a paginated list of all suppliers
+      parameters:
+      - description: Pagination limit
+        in: query
+        name: limit
+        type: integer
+      - description: Pagination offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.SupplierResponse'
+            type: array
+        "400":
+          description: invalid limit or offset value
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Get all suppliers
+      tags:
+      - suppliers
+    post:
+      consumes:
+      - application/json
+      description: Creates a new supplier along with a new address record, in a single
+        transaction
+      parameters:
+      - description: Supplier data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SupplierRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.SupplierResponse'
+        "400":
+          description: invalid request body or validation error
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Create a new supplier
+      tags:
+      - suppliers
+  /suppliers/{id}:
+    delete:
+      description: Deletes a supplier by their unique identifier
+      parameters:
+      - description: Supplier ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Supplier deleted successfully
+        "400":
+          description: invalid id format
+          schema:
+            type: string
+        "404":
+          description: supplier not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Delete a supplier by ID
+      tags:
+      - suppliers
+    get:
+      description: Returns a single supplier by their unique identifier
+      parameters:
+      - description: Supplier ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SupplierResponse'
+        "400":
+          description: invalid id format
+          schema:
+            type: string
+        "404":
+          description: supplier not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Get a supplier by ID
+      tags:
+      - suppliers
+    patch:
+      consumes:
+      - application/json
+      description: Creates a new address record and links it to the supplier, in a
+        single transaction
+      parameters:
+      - description: Supplier ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New address data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAddressRequest'
+      responses:
+        "204":
+          description: Address updated successfully
+        "400":
+          description: invalid request body, id format, or validation error
+          schema:
+            type: string
+        "404":
+          description: supplier not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Update a supplier's address
+      tags:
+      - suppliers
+swagger: "2.0"
