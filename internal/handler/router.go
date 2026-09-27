@@ -6,7 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func SetUpRouter(clientHandler *ClientHandler, supplierHandler *SupplierHandler, productHandler *ProductHandler) http.Handler {
+func SetUpRouter(clientHandler *ClientHandler, supplierHandler *SupplierHandler, productHandler *ProductHandler, imageHandler *ImageHandler) http.Handler {
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(r chi.Router)  {
 		r.Route("/clients", func(r chi.Router) {
@@ -28,6 +28,13 @@ func SetUpRouter(clientHandler *ClientHandler, supplierHandler *SupplierHandler,
 			r.Get("/{id}", productHandler.GetProductByID)
 			r.Get("/", productHandler.GetAllProducts)
 			r.Delete("/{id}", productHandler.DeleteProductByID)
+			r.Post("/{id}/image", imageHandler.AddImage)
+			r.Get("/{id}/image", imageHandler.GetImageByProductID)
+		})
+		r.Route("/images", func(r chi.Router) {
+			r.Patch("/{id}", imageHandler.ChangeImage)
+			r.Delete("/{id}", imageHandler.DeleteImage)
+			r.Get("/{id}", imageHandler.GetImageByImageID)
 		})
 	})
 	return r

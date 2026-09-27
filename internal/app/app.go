@@ -26,16 +26,19 @@ func NewApp(cfg *config.Config) *App {
 	clientRepo := postgres.NewPostgresClientRepository(pool)
 	supplierRepo := postgres.NewPostgresSupplierRepository(pool)
 	productRepo := postgres.NewPostgresProductRepository(pool)
+	imageRepo := postgres.NewPostgresImageRepository(pool)
 
 	clientService := service.NewClientService(clientRepo)
 	supplierService := service.NewSupplierService(supplierRepo)
 	productService := service.NewProductService(productRepo)
+	imageService := service.NewImageService(imageRepo)
 
 	clientHandler := handler.NewClientHandler(clientService, validate)
 	supplierHandler := handler.NewSupplierHandler(supplierService, validate)
 	productHandler := handler.NewProductHandler(productService, validate)
+	imageHandler := handler.NewImageHandler(imageService, validate)
 
-	router := handler.SetUpRouter(clientHandler, supplierHandler, productHandler)
+	router := handler.SetUpRouter(clientHandler, supplierHandler, productHandler, imageHandler)
 	return &App{
 		config: cfg,
 		pool:   pool,
