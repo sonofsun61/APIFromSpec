@@ -36,6 +36,16 @@ func NewClientHandler(service ClientService, validate *validator.Validate) *Clie
 	}
 }
 
+// Create client godoc
+// @Summary Create a new client
+// @Description Creates a new client along with a new address record, in a single transaction.
+// @Tags clients
+// @Accept json
+// @Produce json
+// @Param request body dto.CreateClientRequest true "Client data"
+// @Success 201 {object} dto.ClientResponse
+// @Failure 500 {string} string "internal server error"
+// @Router /clients [post]
 func (h *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateClientRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -70,10 +80,21 @@ func (h *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	w.Header().Set("Content-Type", "application/json")
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(resp)
 }
 
+// Create client godoc
+// @Summary Delete an existing client
+// @Description Deletes an existing client without deleting his address
+// @Tags clients
+// @Param id path string true "Client ID"
+// @Success 204 "Client deleted successfully"
+// @Failure 400 {string} string "Invalid id format"
+// @Failure 404 {string} string "Client not found"
+// @Failure 500 {string} string "Internal server error"
+// @Router /clients/{id} [delete]
 func (h *ClientHandler) DeleteClientByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := uuid.Parse(idStr)
@@ -89,9 +110,23 @@ func (h *ClientHandler) DeleteClientByID(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// GetClients godoc
+// @Summary Get clients
+// @Description Returns clients filtered by name and surname, or a paginated list of all clients if no filter is given
+// @Tags clients
+// @Produce json
+// @Param name query string false "Client first name"
+// @Param surname query string false "Client surname"
+// @Param limit query int false "Pagination limit"
+// @Param offset query int false "Pagination offset"
+// @Success 200 {array} dto.ClientResponse
+// @Failure 400 {string} string "invalid limit or offset value"
+// @Failure 500 {string} string "internal server error"
+// @Router /clients [get]
 func (h *ClientHandler) GetClients(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	surname := r.URL.Query().Get("surname")
@@ -125,10 +160,23 @@ func (h *ClientHandler) GetClients(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := mapper.ClientsWithAddressesToDTO(clients)
 	w.Header().Set("Content-Type", "application/json")
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
 
+// UpdateClientAddress godoc
+// @Summary Update a client's address
+// @Description Creates a new address record and links it to the client, in a single transaction
+// @Tags clients
+// @Accept json
+// @Param id path string true "Client ID"
+// @Param request body dto.UpdateAddressRequest true "New address data"
+// @Success 204 "Address updated successfully"
+// @Failure 400 {string} string "invalid request body, id format, or validation error"
+// @Failure 404 {string} string "client not found"
+// @Failure 500 {string} string "internal server error"
+// @Router /clients/{id} [patch]
 func (h *ClientHandler) UpdateClientAddress(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := uuid.Parse(idStr)
@@ -153,5 +201,6 @@ func (h *ClientHandler) UpdateClientAddress(w http.ResponseWriter, r *http.Reque
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	setCacheControl(w, "no-store")
 	w.WriteHeader(http.StatusNoContent)
 }

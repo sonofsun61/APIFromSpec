@@ -17,3 +17,11 @@ type Product struct {
 	SupplierID     uuid.UUID       `db:"supplier_id"`
 	ImageID        *uuid.UUID      `db:"image_id"`
 }
+
+type NewProductData struct {
+	ProductName    string
+	CategoryName   string
+	Price          decimal.Decimal
+	AvailableStock int
+	SupplierID     uuid.UUID
+}
