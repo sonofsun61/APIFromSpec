@@ -24,4 +24,5 @@ type ProductResponse struct {
 	Price          decimal.Decimal `json:"price"`
 	AvailableStock int             `json:"available_stock"`
 	SupplierID     uuid.UUID       `json:"supplier_id"`
+	Links          map[string]Link `json:"links"`
 }

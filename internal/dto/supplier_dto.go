@@ -15,4 +15,5 @@ type SupplierResponse struct {
 	SupplierName string          `json:"name"`
 	PhoneNumber  string          `json:"phone_number"`
 	Address      AddressResponse `json:"address"`
+	Links        map[string]Link `json:"links"`
 }

@@ -23,4 +23,5 @@ type ClientResponse struct {
 	Birthday      time.Time       `json:"birthday"`
 	Gender        string          `json:"gender"`
 	Address       AddressResponse `json:"address"`
+	Links         map[string]Link `json:"links"`
 }
