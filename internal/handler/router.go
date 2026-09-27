@@ -4,11 +4,14 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	_ "github.com/sonofsun61/APIFromSpec/docs"
 	"github.com/sonofsun61/APIFromSpec/internal/routes"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func SetUpRouter(clientHandler *ClientHandler, supplierHandler *SupplierHandler, productHandler *ProductHandler, imageHandler *ImageHandler) http.Handler {
 	r := chi.NewRouter()
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 	r.Route(routes.ClientsBasePath, func(r chi.Router) {
 		r.Post("/", clientHandler.CreateClient)
 		r.Delete("/{id}", clientHandler.DeleteClientByID)
