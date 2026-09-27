@@ -90,10 +90,10 @@ func (h *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
 // @Tags clients
 // @Param id path string true "Client ID"
 // @Success 204 "Client deleted successfully"
-// @Failure 400 "Invalid id format"
-// @Failure 404 {string} "Client not found"
-// @Failure 500 {string} "Internal server error"
-// @Router clients/{id} [delete]
+// @Failure 400 {string} string "Invalid id format"
+// @Failure 404 {string} string "Client not found"
+// @Failure 500 {string} string "Internal server error"
+// @Router /clients/{id} [delete]
 func (h *ClientHandler) DeleteClientByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := uuid.Parse(idStr)
