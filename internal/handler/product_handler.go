@@ -121,9 +121,9 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-    http.Error(w, err.Error(), http.StatusInternalServerError)
-    return
-}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	resp := mapper.ProductToDTO(product)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
